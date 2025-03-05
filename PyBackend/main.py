@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from Summarizer import TextSummarizer
+from transformers import pipeline
 
 app = FastAPI()
 
+# Enable CORS for all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,7 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class text_model(BaseModel):
+# Load the pre-trained BART model for summarization
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+
+class TextModel(BaseModel):
     text: str
 
 @app.get("/")
@@ -21,10 +25,7 @@ def send_hello():
     return {"message": "Hello, World!"}
 
 @app.post("/post/text-summary")
-async def read_text_summary(data: text_model):
-    print(data)
+async def read_text_summary(data: TextModel):
     text = data.text
-    summarizer = TextSummarizer()
-    summary = summarizer.summarize(text=text)
-    return { "text" : text,
-            "summary": summary }
+    summary = summarizer(text, max_length=150, min_length=50, do_sample=False)
+    return {"text": text, "summary": summary[0]["summary_text"]}
