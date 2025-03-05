@@ -32,7 +32,7 @@ app.get("/summarize/:id", async (req, res) => {
         }
 
         const data = { text: post.Content };
-        const summary = await axios.post("http://localhost:8000/post/text-summary", data);
+        const summary = await axios.post("https://blogsite-with-ai-summarize-feature.onrender.com/post/text-summary", data);
         res.send(summary.data);
     } catch (error) {
         console.error(error);
